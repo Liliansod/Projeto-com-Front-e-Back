@@ -1,3 +1,5 @@
+const { console } = require("inspector");
+
 // Ao campo CEP perder o foco será feito a tratativa
 document.getElementById("cep").addEventListener("blur", async function () {
   const cep = this.value.replace(/\D/g, ""); // Remove caracteres não numericos
@@ -38,5 +40,47 @@ document.getElementById("cep").addEventListener("blur", async function () {
   } catch (error) {
     console.error("Erro ao buscar o CEP:", error); // Exibe o erro no console
     alert("Erro ao buscar o CEP. Verifique o console para mais detalhes");
+  }
+});
+
+// Adiciona um evento de envio
+document.getElementById('addressForm').addEventListener('submit', async function (e){
+  e.preventDefault(); // Impede o recarregamento da pagina ao enviar o formulário
+
+  // Obtém os valores dos campos do formulário e armazena
+  const cep = document.getElementById("Cep").value;
+  const logradouro = document.getElementById("logradouro").value;
+  const bairro = document.getElementById("bairro").value;
+  const cidade = document.getElementById("cidade").value;
+  const estado = document.getElementById("estado").value;
+
+  try{
+    // Faz a requisição POST para o backend para salvar o endereço
+    const response = await fetch('http://localhost:3000/api/address', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // Define o envio do conteudo como JSON 
+      },
+      body: JSON.stringify({ cep, logradouro, bairro, cidade, estado}), // Envia os campos
+    });
+
+    if (!response.ok){
+      throw new Error('Erro ao salvar o endereço!') // Retorna um erro se falhar
+    }
+
+    // Converte a esposta req. para JSON
+    const result = await response.json();
+    alert(result.message); // Exibe a mensagem de sucesso retornada pelo backend
+
+    //Limpa os campos de formulário após o envio bem-sucedido
+    document.getElementById("AddressForm").request();
+
+    // Remove o feedback visual (borda colorida)
+    document.querySelectorAll(".form-grup input").forEach((input) =>{
+      input.style.borderColor = "#ddd"; // Define a borda de volta para o padrão
+    });
+  }catch (error){
+    console.error('Erro ao salvar o endereço', error);
+    alert("Erro ao salvar o endereço. Verifique o console para mais detalhes!."); // Alerta ao usuário sobre o erro
   }
 });
